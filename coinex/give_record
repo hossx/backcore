@@ -26,3 +26,4 @@ date        from         id          amount     currency  reason
 2015-02-13  1000001418   1000001436  0.1        btc       k line maker use
 2015-02-13  1000001414   1000001436  5000       btsx      k line maker use
 2015-02-13  1000000013   1000001436  5000       xrp       k line maker use
+2015-02-13  1000001419   1000001436  30         ltc       k line maker use
