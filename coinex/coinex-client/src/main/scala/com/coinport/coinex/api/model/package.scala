@@ -247,7 +247,15 @@ package object model {
   }
 
   def apiV2FromProfile(u: UserProfile, apiTokenPairs: Seq[Seq[Option[String]]]) = {
-    ApiV2Profile(u.id, u.email, u.realName, u.mobile, apiTokenPairs, u.emailVerified, u.mobileVerified, u.googleAuthenticatorSecret.isDefined)
+    val (emailAuthEnabled, mobileAuthEnabled) = u.securityPreference match {
+      case Some("01") => (true, false)
+      case Some("10") => (false, true)
+      case Some("11") => (true, true)
+      case None => (true, false) // default email auth is open
+      case _ => (false, false)
+    }
+
+    ApiV2Profile(u.id, u.email, u.realName, u.mobile, apiTokenPairs, u.emailVerified, u.mobileVerified, u.googleAuthenticatorSecret.isDefined, emailAuthEnabled, mobileAuthEnabled)
   }
 
   def fromNotification(n: Notification) = {

@@ -29,5 +29,7 @@ case class ApiV2Profile(
   apiTokenPairs: Seq[Seq[Option[String]]],
   emailVerified: Boolean,
   mobileVerified: Boolean,
-  googleAuthEnabled: Boolean)
+  googleAuthEnabled: Boolean,
+  emailAuthEnabled: Boolean,
+  mobileAuthEnabled: Boolean)
 
