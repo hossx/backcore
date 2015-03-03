@@ -255,7 +255,7 @@ package object model {
       case _ => (false, false)
     }
 
-    ApiV2Profile(u.id, u.email, u.realName, u.mobile, apiTokenPairs, u.emailVerified, u.mobileVerified, u.googleAuthenticatorSecret.isDefined, emailAuthEnabled, mobileAuthEnabled)
+    ApiV2Profile(u.id, u.email, u.realName, u.mobile, apiTokenPairs, u.emailVerified, u.mobileVerified, u.googleAuthenticatorSecret.isDefined, emailAuthEnabled, mobileAuthEnabled, u.realName2, u.googleAuthenticatorSecret)
   }
 
   def fromNotification(n: Notification) = {

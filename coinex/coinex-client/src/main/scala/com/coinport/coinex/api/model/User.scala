@@ -24,12 +24,14 @@ case class User(id: Long,
 case class ApiV2Profile(
   uid: Long,
   email: String,
-  name: Option[String],
+  nickName: Option[String],
   mobile: Option[String],
   apiTokenPairs: Seq[Seq[Option[String]]],
   emailVerified: Boolean,
   mobileVerified: Boolean,
   googleAuthEnabled: Boolean,
   emailAuthEnabled: Boolean,
-  mobileAuthEnabled: Boolean)
+  mobileAuthEnabled: Boolean,
+  realName: Option[String],
+  googleAuthenticatorSecret: Option[String] = None)
 
