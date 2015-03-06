@@ -26,30 +26,30 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
   def receiveRecover = PartialFunction.empty[Any, Unit]
 
   def receiveCommand = LoggingReceive {
-    case m @ DoRegisterUser(userProfile, password, referralParams) =>
+    case m @ DoRegisterUser(userProfile, password, referralParams, versionOpt, lang) =>
       manager.getUser(userProfile.email) match {
         case Some(_) =>
           sender ! RegisterUserFailed(EmailAlreadyRegistered)
         case None =>
           val verificationToken = generateRandomHexToken(userProfile.email)
           val profile = manager.regulateProfile(userProfile, password, verificationToken, referralParams)
-          persist(DoRegisterUser(profile, null, referralParams)) {
+          persist(DoRegisterUser(profile, null, referralParams, versionOpt, lang)) {
             event =>
               updateState(event)
               sender ! RegisterUserSucceeded(profile)
-              sendEmailVerificationEmail(profile)
+              sendEmailVerificationEmail(profile, versionOpt, lang)
           }
       }
 
-    case m @ DoSendVerificationCodeEmail(email, code) =>
+    case m @ DoSendVerificationCodeEmail(email, code, versionOpt, lang) =>
       manager.getUser(email) match {
         case Some(profile) =>
           sender ! SendVerificationCodeEmailSucceeded(profile.id, profile.email)
-          sendVerificationCodeEmail(email, code)
+          sendVerificationCodeEmail(email, code, versionOpt, lang)
         case None => sender ! SendVerificationCodeEmailFailed(UserNotExist)
       }
 
-    case m @ DoResendVerifyEmail(email) =>
+    case m @ DoResendVerifyEmail(email, versionOpt, lang) =>
       manager.getUser(email) match {
         case Some(profile) if profile.verificationToken.isEmpty =>
           val newProfile = profile.copy(verificationToken = Some(generateRandomHexToken(profile.email)))
@@ -58,11 +58,11 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
               log.error(s"Request send mail to user without verificationToken, reset verificationToken : $newProfile")
               updateState(event)
               sender ! ResendVerifyEmailSucceeded(profile.id, profile.email)
-              sendEmailVerificationEmail(newProfile)
+              sendEmailVerificationEmail(newProfile, versionOpt, lang)
           }
         case Some(profile) =>
           sender ! ResendVerifyEmailSucceeded(profile.id, profile.email)
-          sendEmailVerificationEmail(profile)
+          sendEmailVerificationEmail(profile, versionOpt, lang)
         case None =>
           sender ! ResendVerifyEmailFailed(UserNotExist)
       }
@@ -87,12 +87,12 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
           sender ! UpdateUserProfileFailed(UserNotExist)
       }
 
-    case m @ DoRequestPasswordReset(email, _) =>
+    case m @ DoRequestPasswordReset(email, _, versionOpt, lang) =>
       manager.getUser(email) match {
 
         case Some(profile) if profile.passwordResetToken.isDefined =>
           sender ! RequestPasswordResetSucceeded(profile.id, profile.email)
-          sendRequestPasswordResetEmail(profile)
+          sendRequestPasswordResetEmail(profile, versionOpt, lang)
 
         case Some(profile) if profile.passwordResetToken.isEmpty =>
           persist(m.copy(passwordResetToken = Some(generateRandomHexToken(email))))(updateState)
@@ -238,9 +238,9 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
     case m: DoRegisterUser => manager.registerUser(m.userProfile)
     case DoUpdateUserProfile(profile) => manager.updateUser(profile)
 
-    case DoRequestPasswordReset(email, token) =>
+    case DoRequestPasswordReset(email, token, versionOpt, lang) =>
       manager.requestPasswordReset(email, token.get)
-      if (recoveryFinished) sendRequestPasswordResetEmail(manager.getUser(email).get)
+      if (recoveryFinished) sendRequestPasswordResetEmail(manager.getUser(email).get, versionOpt, lang)
 
     case DoResetPassword(password, token) => manager.resetPassword(password, token)
     case DoChangePassword(email, oldPassword, newPassword) => manager.changePassword(email, newPassword)
@@ -249,25 +249,28 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
     case QueryCryptoAddressResult(cryptoAdds) => manager.updateNxtDepositAddresses(cryptoAdds)
   }
 
-  private def sendVerificationCodeEmail(email: String, code: String) {
+  private def sendVerificationCodeEmail(email: String, code: String, versionOpt: Option[String], lang: Option[String]) = {
     log.info(s"(email verification code : $email, $code)")
-    mailer ! DoSendEmail(email, EmailType.VerificationCode, Map("CODE" -> code))
+    mailer ! DoSendEmail(email, EmailType.VerificationCode, Map(
+      "CODE" -> code,
+      "BASE" -> "http://x.coinport.com"), versionOpt, lang)
   }
 
-  private def sendEmailVerificationEmail(profile: UserProfile) {
+  private def sendEmailVerificationEmail(profile: UserProfile, versionOpt: Option[String], lang: Option[String]) = {
     log.info(s"(register verification code : ${profile.email}, ${profile.verificationToken.getOrElse("")})")
-    if (profile.verificationToken.isDefined)
-      mailer ! DoSendEmail(profile.email, EmailType.RegisterVerify, Map(
-        "NAME" -> profile.realName.getOrElse(profile.email),
-        "LANG" -> "CHINESE",
-        "TOKEN" -> profile.verificationToken.get))
+    mailer ! DoSendEmail(profile.email, EmailType.RegisterVerify, Map(
+      "NAME" -> profile.realName.getOrElse(profile.email),
+      "LANG" -> "CHINESE",
+      "BASE" -> "http://x.coinport.com",
+      "TOKEN" -> profile.verificationToken.get), versionOpt, lang)
   }
 
-  private def sendRequestPasswordResetEmail(profile: UserProfile) {
+  private def sendRequestPasswordResetEmail(profile: UserProfile, versionOpt: Option[String], lang: Option[String]) = {
     mailer ! DoSendEmail(profile.email, EmailType.PasswordResetToken, Map(
       "NAME" -> profile.realName.getOrElse(profile.email),
       "LANG" -> "CHINESE",
-      "TOKEN" -> profile.passwordResetToken.get))
+      "BASE" -> "http://x.coinport.com",
+      "TOKEN" -> profile.passwordResetToken.get), versionOpt, lang)
   }
 
   private val rand = SecureRandom.getInstance("SHA1PRNG", "SUN")

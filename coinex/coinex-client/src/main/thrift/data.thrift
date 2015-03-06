@@ -468,6 +468,8 @@ struct AccountTransfer {
     15: optional string memo
     16: optional string nxtPublicKey
     17: optional Currency source // the source of the transfer
+    18: optional string emailVersion
+    19: optional string emailLang
 }
 
 struct AccountTransfersWithMinerFee {

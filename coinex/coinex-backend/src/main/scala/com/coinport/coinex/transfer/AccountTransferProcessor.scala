@@ -158,7 +158,7 @@ class AccountTransferProcessor(val db: MongoDB, accountProcessorPath: ActorPath,
                     sender ! AdminCommandResult(Ok)
                 }
                 if (transfer.status == Pending)
-                  sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency)
+                  sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency, transfer.emailVersion, transfer.emailLang)
               case TransferType.ColdToHot =>
                 confirmSuccess(transfer, Accepted)
               case TransferType.UserToHot if transfer.status == BitwayFailed =>
@@ -180,7 +180,7 @@ class AccountTransferProcessor(val db: MongoDB, accountProcessorPath: ActorPath,
               // Manual withdrawal, not debug
               case TransferType.Withdrawal if !transferDebugConfig && transfer.status == Pending =>
                 confirmSuccess(transfer, Processing)
-                sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency)
+                sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency, transfer.emailVersion, transfer.emailLang)
               // debug, or confirm processing
               case _ =>
                 val updated = transfer.copy(updated = Some(System.currentTimeMillis), status = Succeeded)
@@ -189,7 +189,7 @@ class AccountTransferProcessor(val db: MongoDB, accountProcessorPath: ActorPath,
                     deliverToAccountManager(event)
                     updateState(event)
                     if (event.transfer.`type` == Withdrawal && transferDebugConfig) { // withdrawal debug mode should send message here
-                      sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency)
+                      sendWithdrawalNotification(transfer.userId, transfer.amount, transfer.currency, transfer.emailVersion, transfer.emailLang)
                     }
                 }
                 sender ! AdminCommandResult(Ok)
@@ -247,12 +247,12 @@ class AccountTransferProcessor(val db: MongoDB, accountProcessorPath: ActorPath,
       }
   }
 
-  private def sendWithdrawalNotification(uid: Long, amount: Long, currency: Currency) = {
+  private def sendWithdrawalNotification(uid: Long, amount: Long, currency: Currency, versionOpt: Option[String], lang: Option[String]) = {
     val email = userReader.getEmailByUid(uid)
     val amountDouble = new CurrencyWrapper(amount).externalValue(currency).toString
     val content = "We are informing you that today, the amount of " + amountDouble + currency.toString +
       " has been drawn out of your account. "
-    mailer ! DoSendEmail(email, EmailType.WithdrawalNotification, Map("CONTENT" -> content))
+    mailer ! DoSendEmail(email, EmailType.WithdrawalNotification, Map("CONTENT" -> content), versionOpt, lang)
   }
 
   private def handleTransfer(msg: DoRequestTransfer) {

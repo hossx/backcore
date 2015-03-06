@@ -154,6 +154,8 @@ class ThriftBinarySerializer extends Serializer {
   lazy val _cQueryAccountStatisticsResult = BinaryScalaCodec(QueryAccountStatisticsResult)
   lazy val _cQueryActiveActors = BinaryScalaCodec(QueryActiveActors)
   lazy val _cQueryActiveActorsResult = BinaryScalaCodec(QueryActiveActorsResult)
+  lazy val _cQueryAllDetailReserve = BinaryScalaCodec(QueryAllDetailReserve)
+  lazy val _cQueryAllDetailReserveResult = BinaryScalaCodec(QueryAllDetailReserveResult)
   lazy val _cQueryApiSecretByToken = BinaryScalaCodec(QueryApiSecretByToken)
   lazy val _cQueryApiSecretByTokenResult = BinaryScalaCodec(QueryApiSecretByTokenResult)
   lazy val _cQueryApiSecrets = BinaryScalaCodec(QueryApiSecrets)
@@ -388,6 +390,8 @@ class ThriftBinarySerializer extends Serializer {
     case m: QueryAccountStatisticsResult => _cQueryAccountStatisticsResult(m)
     case m: QueryActiveActors => _cQueryActiveActors(m)
     case m: QueryActiveActorsResult => _cQueryActiveActorsResult(m)
+    case m: QueryAllDetailReserve => _cQueryAllDetailReserve(m)
+    case m: QueryAllDetailReserveResult => _cQueryAllDetailReserveResult(m)
     case m: QueryApiSecretByToken => _cQueryApiSecretByToken(m)
     case m: QueryApiSecretByTokenResult => _cQueryApiSecretByTokenResult(m)
     case m: QueryApiSecrets => _cQueryApiSecrets(m)
@@ -626,6 +630,8 @@ class ThriftBinarySerializer extends Serializer {
     case Some(c) if c == classOf[QueryAccountStatisticsResult.Immutable] => _cQueryAccountStatisticsResult.invert(bytes).get
     case Some(c) if c == classOf[QueryActiveActors.Immutable] => _cQueryActiveActors.invert(bytes).get
     case Some(c) if c == classOf[QueryActiveActorsResult.Immutable] => _cQueryActiveActorsResult.invert(bytes).get
+    case Some(c) if c == classOf[QueryAllDetailReserve.Immutable] => _cQueryAllDetailReserve.invert(bytes).get
+    case Some(c) if c == classOf[QueryAllDetailReserveResult.Immutable] => _cQueryAllDetailReserveResult.invert(bytes).get
     case Some(c) if c == classOf[QueryApiSecretByToken.Immutable] => _cQueryApiSecretByToken.invert(bytes).get
     case Some(c) if c == classOf[QueryApiSecretByTokenResult.Immutable] => _cQueryApiSecretByTokenResult.invert(bytes).get
     case Some(c) if c == classOf[QueryApiSecrets.Immutable] => _cQueryApiSecrets.invert(bytes).get

@@ -56,12 +56,40 @@ class MandrillMailHandler(mandrillApiKey: String)(implicit val system: ActorSyst
 
   val pipeline: HttpRequest => Future[HttpResponse] = (addHeader("Content-Type", "application/json; charset=utf-8") ~> sendReceive)
 
-  def sendRegistrationEmailConfirmation(to: String, params: Seq[(String, String)]) = sendMail(to, registerConfimTemplate, params)
+  def sendRegistrationEmailConfirmation(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]) = {
+    val newRegisterConfimTemplate = if (v.isDefined && "v2" == v.get) {
+      if (lang.isDefined && "en" == lang.get) "x2_register_confirm_en"
+      else "x2_register_confirm_zh"
+    } else registerConfimTemplate
+    sendMail(to, newRegisterConfimTemplate, params)
+  }
+
   def sendLoginToken(to: String, params: Seq[(String, String)]) = sendMail(to, loginTokenTemplate, params)
-  def sendPasswordReset(to: String, params: Seq[(String, String)]) = sendMail(to, passwordResetTemplate, params)
+
+  def sendPasswordReset(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]) = {
+    val newPasswordResetTemplate = if (v.isDefined && "v2" == v.get) {
+      if (lang.isDefined && "en" == lang.get) "x2_password_reset_en"
+      else "x2_password_reset_zh"
+    } else passwordResetTemplate
+    sendMail(to, newPasswordResetTemplate, params)
+  }
+
   def sendMonitor(to: String, params: Seq[(String, String)]) = sendMail(to, monitorTemplate, params)
-  def sendVerificationCodeEmail(to: String, params: Seq[(String, String)]) = sendMail(to, codeTemplate, params)
-  def sendWithdrawalNotification(to: String, params: Seq[(String, String)]) = sendMail(to, withdrawalTemplate, params)
+
+  def sendVerificationCodeEmail(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]) = {
+    val newCodeTemplate = if (v.isDefined && "v2" == v.get) {
+      if (lang.isDefined && "en" == lang.get) "x2_dynamic_code_en"
+      else "x2_dynamic_code_zh"
+    } else codeTemplate
+    sendMail(to, newCodeTemplate, params)
+  }
+  def sendWithdrawalNotification(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]) = {
+    val newWithdrawalTemplate = if (v.isDefined && "v2" == v.get) {
+      if (lang.isDefined && "en" == lang.get) "x2_notification_en"
+      else "x2_notification_zh"
+    } else withdrawalTemplate
+    sendMail(to, newWithdrawalTemplate, params)
+  }
 
   private def sendMail(to: String, template: String, params: Seq[(String, String)]) = {
     val mergeVars = params.map { case (k, v) => MergeVar(k, v) }

@@ -15,7 +15,7 @@ import scala.concurrent.Await
 object UserService extends AkkaService {
   override def hashCode(): Int = super.hashCode()
 
-  def register(user: User) = {
+  def register(user: User, versionOpt: Option[String], lang: Option[String]) = {
     val id = user.id
     val email = user.email
     val realName = user.realName
@@ -44,7 +44,7 @@ object UserService extends AkkaService {
       withdrawalAddresses = None
     )
 
-    val command = DoRegisterUser(profile, password, referralParams)
+    val command = DoRegisterUser(profile, password, referralParams, versionOpt, lang)
 
     backend ? command map {
       case succeeded: RegisterUserSucceeded =>
@@ -374,8 +374,8 @@ object UserService extends AkkaService {
     }
   }
 
-  def requestPasswordReset(email: String) = {
-    val command = DoRequestPasswordReset(email)
+  def requestPasswordReset(email: String, versionOpt: Option[String], lang: Option[String]) = {
+    val command = DoRequestPasswordReset(email, None, versionOpt, lang)
     backend ? command map {
       case succeeded: RequestPasswordResetSucceeded =>
         ApiResult(true, 0, "重置密码链接已发送，请查看注册邮箱", Some(succeeded))
@@ -433,8 +433,8 @@ object UserService extends AkkaService {
     }
   }
 
-  def resendVerifyEmail(email: String) = {
-    val command = DoResendVerifyEmail(email)
+  def resendVerifyEmail(email: String, versionOpt: Option[String], lang: Option[String]) = {
+    val command = DoResendVerifyEmail(email, versionOpt, lang)
     backend ? command map {
       case result: ResendVerifyEmailSucceeded =>
         ApiResult(true, 0, "")
@@ -463,8 +463,8 @@ object UserService extends AkkaService {
     }
   }
 
-  def sendVerificationCodeEmail(email: String, code: String) = {
-    backend ? DoSendVerificationCodeEmail(email, code) map {
+  def sendVerificationCodeEmail(email: String, code: String, versionOpt: Option[String], lang: Option[String]) = {
+    backend ? DoSendVerificationCodeEmail(email, code, versionOpt, lang) map {
       case result: SendVerificationCodeEmailSucceeded =>
         ApiResult(true, 0, "")
       case e =>

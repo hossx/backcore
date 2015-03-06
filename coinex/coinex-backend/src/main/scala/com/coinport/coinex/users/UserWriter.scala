@@ -25,7 +25,7 @@ class UserWriter(db: MongoDB, secret: String) extends ExtendedView {
   def updateState(event: Any) = event match {
     case m: DoRegisterUser => profiles.put(manager.registerUser(m.userProfile))
     case DoUpdateUserProfile(profile) => profiles.put(manager.updateUser(profile))
-    case DoRequestPasswordReset(email, token) => profiles.put(manager.requestPasswordReset(email, token.get))
+    case DoRequestPasswordReset(email, token, _, _) => profiles.put(manager.requestPasswordReset(email, token.get))
     case DoResetPassword(password, token) => profiles.put(manager.resetPassword(password, token))
     case DoChangePassword(email, oldPassword, newPassword) => profiles.put(manager.changePassword(email, newPassword))
     case VerifyEmail(token) => profiles.put(manager.verifyEmail(token))

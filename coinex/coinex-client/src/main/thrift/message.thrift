@@ -85,16 +85,16 @@ typedef data.BankCard                           _BankCard
 /* C    */ struct DumpStateToFile                         {1: string actorPath}
 
 ////////// UserProcessor
-/* C,P  */ struct DoRegisterUser                          {1: _UserProfile userProfile, 2: string password, 3: optional _ReferralParams rparams}
+/* C,P  */ struct DoRegisterUser                          {1: _UserProfile userProfile, 2: string password, 3: optional _ReferralParams rparams, 4: optional string versionOpt, 5: optional string lang}
 /* R-   */ struct RegisterUserFailed                      {1: _ErrorCode error}
 /* R+   */ struct RegisterUserSucceeded                   {1: _UserProfile userProfile}
 /* R+   */ struct CleanUserData                           {1: set<_CleanActionType> cleanActions}
 
-/* C,P  */ struct DoResendVerifyEmail                     {1: string email}
+/* C,P  */ struct DoResendVerifyEmail                     {1: string email, 2: optional string version, 3: optional string lang}
 /* R-   */ struct ResendVerifyEmailFailed                 {1: _ErrorCode error}
 /* R+   */ struct ResendVerifyEmailSucceeded              {1: i64 id, 2: string email}
 
-/* C,P  */ struct DoSendVerificationCodeEmail             {1: string email, 2: string verificationCode}
+/* C,P  */ struct DoSendVerificationCodeEmail             {1: string email, 2: string verificationCode, 3: optional string versionOpt, 4: optional string lang}
 /* R-   */ struct SendVerificationCodeEmailFailed         {1: _ErrorCode error}
 /* R+   */ struct SendVerificationCodeEmailSucceeded      {1: i64 id, 2: string email}
 
@@ -110,7 +110,7 @@ typedef data.BankCard                           _BankCard
 /* R-   */ struct VerifyRealNameFailed                    {1: _ErrorCode error}
 /* R+   */ struct VerifyRealNameSucceeded                 {1: _UserProfile userProfile /* previous profile */}
 
-/* C,P  */ struct DoRequestPasswordReset                  {1: string email, 2: optional string passwordResetToken /* ignored */}
+/* C,P  */ struct DoRequestPasswordReset                  {1: string email, 2: optional string passwordResetToken /* ignored */, 3: optional string versionOpt, 4: optional string lang}
 /* R-   */ struct RequestPasswordResetFailed              {1: _ErrorCode error}
 /* R+   */ struct RequestPasswordResetSucceeded           {1: i64 id, 2: string email}
 
@@ -214,7 +214,7 @@ typedef data.BankCard                           _BankCard
 /* C,P  */ struct DoRemoveRobotDNA                        {1: i64 dnaId}
 
 ////////// Mailer
-/* C    */ struct DoSendEmail                             {1: string email, 2: _EmailType emailType, 3: map<string, string> params}
+/* C    */ struct DoSendEmail                             {1: string email, 2: _EmailType emailType, 3: map<string, string> params, 4: optional string versionOpt, 5: optional string langOpt}
 
 ////////// BitwayProcessor
 /* C    */ struct AllocateNewAddress                      {1: _Currency currency, 2: i64 userId, 3: optional string assignedAddress}
