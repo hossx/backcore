@@ -37,21 +37,21 @@ object MarketService extends AkkaService {
     }
   }
 
-  def getTransactions(marketSide: Option[MarketSide], tid: Option[Long], uid: Option[Long], orderId: Option[Long], skip: Int, limit: Int): Future[ApiResult] = {
+  def getTransactions(marketSide: Option[MarketSide], tid: Option[Long], uid: Option[Long], orderId: Option[Long], skip: Int, limit: Int, fromTid: Option[Long]): Future[ApiResult] = {
     val cursor = Cursor(skip, limit)
     val queryMarketSide = marketSide.map(ms => QueryMarketSide(ms, true))
-    backend ? QueryTransaction(tid, uid, orderId, queryMarketSide, cursor) map {
+    backend ? QueryTransaction(tid, uid, orderId, queryMarketSide, cursor, fromTid) map {
       case result: QueryTransactionResult =>
         val items = result.transactions map (t => fromTransaction(t))
         ApiResult(data = Some(ApiPagingWrapper(skip, limit, items, result.count.toInt)))
     }
   }
 
-  def getGlobalTransactions(marketSide: Option[MarketSide], skip: Int, limit: Int): Future[ApiResult] = getTransactions(marketSide, None, None, None, skip, limit)
+  def getGlobalTransactions(marketSide: Option[MarketSide], skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, None, None, skip, limit, fromTid)
 
-  def getTransactionsByUser(marketSide: Option[MarketSide], uid: Long, skip: Int, limit: Int): Future[ApiResult] = getTransactions(marketSide, None, Some(uid), None, skip, limit)
+  def getTransactionsByUser(marketSide: Option[MarketSide], uid: Long, skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, Some(uid), None, skip, limit, fromTid)
 
-  def getTransactionsByOrder(marketSide: Option[MarketSide], orderId: Long, skip: Int, limit: Int): Future[ApiResult] = getTransactions(marketSide, None, None, Some(orderId), skip, limit)
+  def getTransactionsByOrder(marketSide: Option[MarketSide], orderId: Long, skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, None, Some(orderId), skip, limit, fromTid)
 
   def getTransaction(tid: Long) = {
     backend ? QueryTransaction(Some(tid), None, None, None, Cursor(0, 1)) map {

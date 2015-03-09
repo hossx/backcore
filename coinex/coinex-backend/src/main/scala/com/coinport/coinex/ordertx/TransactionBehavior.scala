@@ -64,6 +64,7 @@ trait TransactionBehavior {
       if (qs.bothSide) MongoDBObject(MARKET -> market)
       else MongoDBObject(MARKET -> q.side.get.side.S, SIDE -> side)
     }
+    if (!q.tid.isDefined && q.fromTid.isDefined) query ++= (TID $lt q.fromTid.get)
     query
   }
 }
