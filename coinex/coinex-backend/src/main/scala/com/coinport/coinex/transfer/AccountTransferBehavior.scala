@@ -213,6 +213,7 @@ trait AccountTransferBehavior {
       if (q.types.nonEmpty) query ++= $or(q.types.map(t => DATA + "." + AccountTransfer.TypeField.name -> t.toString): _*)
       if (q.status.isDefined) query ++= MongoDBObject(DATA + "." + AccountTransfer.StatusField.name -> q.status.get.name)
       if (q.spanCur.isDefined) query ++= (DATA + "." + AccountTransfer.CreatedField.name $lte q.spanCur.get.from $gte q.spanCur.get.to)
+      if (q.fromId.isDefined) query ++= (DATA + "." + AccountTransfer.IdField.name $lt q.fromId.get)
       query
     }
   }
