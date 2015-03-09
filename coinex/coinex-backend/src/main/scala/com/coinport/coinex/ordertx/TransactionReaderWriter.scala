@@ -13,7 +13,9 @@ class TransactionReader(val db: MongoDB) extends ExtendedActor with TransactionB
   val coll = db("transactions")
 
   def receive = LoggingReceive {
-    case q: QueryTransaction => sender ! QueryTransactionResult(getItems(q), countItems(q))
+    case q: QueryTransaction =>
+      val count = if (q.needCount) countItems(q) else -1
+      sender ! QueryTransactionResult(getItems(q), count)
   }
 }
 

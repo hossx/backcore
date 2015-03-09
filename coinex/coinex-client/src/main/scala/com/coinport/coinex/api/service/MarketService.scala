@@ -37,10 +37,10 @@ object MarketService extends AkkaService {
     }
   }
 
-  def getTransactions(marketSide: Option[MarketSide], tid: Option[Long], uid: Option[Long], orderId: Option[Long], skip: Int, limit: Int, fromTid: Option[Long]): Future[ApiResult] = {
+  def getTransactions(marketSide: Option[MarketSide], tid: Option[Long], uid: Option[Long], orderId: Option[Long], skip: Int, limit: Int, fromTid: Option[Long], needCount: Boolean = true): Future[ApiResult] = {
     val cursor = Cursor(skip, limit)
     val queryMarketSide = marketSide.map(ms => QueryMarketSide(ms, true))
-    backend ? QueryTransaction(tid, uid, orderId, queryMarketSide, cursor, fromTid) map {
+    backend ? QueryTransaction(tid, uid, orderId, queryMarketSide, cursor, fromTid, needCount) map {
       case result: QueryTransactionResult =>
         val items = result.transactions map (t => fromTransaction(t))
         ApiResult(data = Some(ApiPagingWrapper(skip, limit, items, result.count.toInt)))

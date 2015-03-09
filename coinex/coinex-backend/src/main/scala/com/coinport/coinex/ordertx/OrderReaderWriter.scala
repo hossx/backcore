@@ -14,7 +14,8 @@ class OrderReader(db: MongoDB) extends ExtendedActor with OrderMongoHandler with
 
   def receive = LoggingReceive {
     case q: QueryOrder =>
-      sender ! QueryOrderResult(getItems(q), countItems(q))
+      val count = if (q.needCount) countItems(q) else -1
+      sender ! QueryOrderResult(getItems(q), count)
   }
 }
 

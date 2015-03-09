@@ -11,8 +11,8 @@ object TransferService extends AkkaService {
     null
   }
 
-  def getTransfers(userId: Option[Long], currency: Option[Currency], status: Option[TransferStatus], spanCur: Option[SpanCursor], transferTypes: Seq[TransferType], cur: Cursor, fromAdmin: Boolean = false, fromId: Option[Long] = None): Future[ApiResult] = {
-    backend ? QueryTransfer(userId, currency, status, spanCur, transferTypes, cur, fromId) map {
+  def getTransfers(userId: Option[Long], currency: Option[Currency], status: Option[TransferStatus], spanCur: Option[SpanCursor], transferTypes: Seq[TransferType], cur: Cursor, fromAdmin: Boolean = false, fromId: Option[Long] = None, needCount: Boolean = true): Future[ApiResult] = {
+    backend ? QueryTransfer(userId, currency, status, spanCur, transferTypes, cur, fromId, needCount) map {
       case result: QueryTransferResult =>
         val items = result.transfers.map(fromTransferItem(_, fromAdmin))
         ApiResult(data = Some(ApiPagingWrapper(cur.skip, cur.limit, items, result.count.toInt)))
