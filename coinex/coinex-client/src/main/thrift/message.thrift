@@ -303,7 +303,7 @@ typedef data.BankCard                           _BankCard
 /* R    */ struct QueryCandleDataResult                   {1: _CandleData candleData}
 
 ////////// OrderView
-/* Q    */ struct QueryOrder                              {1: optional i64 uid, 2: optional i64 oid, 3:list<i32> statusList, 4:optional _QueryMarketSide side, 5: _Cursor cursor}
+/* Q    */ struct QueryOrder                              {1: optional i64 uid, 2: optional i64 oid, 3:list<i32> statusList, 4:optional _QueryMarketSide side, 5: _Cursor cursor, 6: optional i64 fromOid}
 /* R    */ struct QueryOrderResult                        {1: list<_OrderInfo> orderinfos, 2: i64 count}
 
 ////////// TransactionView

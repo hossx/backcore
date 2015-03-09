@@ -60,6 +60,9 @@ class UserProcessor(mailer: ActorRef, bitwayProcessors: collection.immutable.Map
               sender ! ResendVerifyEmailSucceeded(profile.id, profile.email)
               sendEmailVerificationEmail(newProfile, versionOpt, lang)
           }
+        // if verified not send email again
+        case Some(profile) if profile.emailVerified =>
+          sender ! ResendVerifyEmailSucceeded(profile.id, profile.email)
         case Some(profile) =>
           sender ! ResendVerifyEmailSucceeded(profile.id, profile.email)
           sendEmailVerificationEmail(profile, versionOpt, lang)
