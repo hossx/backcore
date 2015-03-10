@@ -47,11 +47,11 @@ object MarketService extends AkkaService {
     }
   }
 
-  def getGlobalTransactions(marketSide: Option[MarketSide], skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, None, None, skip, limit, fromTid)
+  def getGlobalTransactions(marketSide: Option[MarketSide], skip: Int, limit: Int, fromTid: Option[Long] = None, needCount: Boolean = true): Future[ApiResult] = getTransactions(marketSide, None, None, None, skip, limit, fromTid, needCount)
 
-  def getTransactionsByUser(marketSide: Option[MarketSide], uid: Long, skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, Some(uid), None, skip, limit, fromTid)
+  def getTransactionsByUser(marketSide: Option[MarketSide], uid: Long, skip: Int, limit: Int, fromTid: Option[Long] = None, needCount: Boolean = true): Future[ApiResult] = getTransactions(marketSide, None, Some(uid), None, skip, limit, fromTid, needCount)
 
-  def getTransactionsByOrder(marketSide: Option[MarketSide], orderId: Long, skip: Int, limit: Int, fromTid: Option[Long] = None): Future[ApiResult] = getTransactions(marketSide, None, None, Some(orderId), skip, limit, fromTid)
+  def getTransactionsByOrder(marketSide: Option[MarketSide], orderId: Long, skip: Int, limit: Int, fromTid: Option[Long] = None, needCount: Boolean = true): Future[ApiResult] = getTransactions(marketSide, None, None, Some(orderId), skip, limit, fromTid, needCount)
 
   def getTransaction(tid: Long) = {
     backend ? QueryTransaction(Some(tid), None, None, None, Cursor(0, 1)) map {
