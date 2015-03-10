@@ -125,6 +125,17 @@ object UserService extends AkkaService {
     }
   }
 
+  def deleteApiSecret(userId: Long, token: String) = {
+    val command = DoDeleteApiSecret(ApiSecret("", Some(token), Some(userId), None))
+    backend ? command map {
+      case ApiSecretOperationResult(code, _) =>
+        if (ErrorCode.Ok == code) ApiResult(true, 0, "")
+        else ApiResult(false, code.value, "")
+      case x =>
+        ApiResult(false, -1, x.toString)
+    }
+  }
+
   def getDepositAddress(currencySeq: Seq[Currency], userId: Long) = {
     val cryptoCurrencySeq = currencySeq.filter(_.value >= 1000)
     backend ? QueryProfile(Some(userId)) map {

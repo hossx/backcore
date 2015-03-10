@@ -56,7 +56,7 @@ class ApiAuthManager(initialSeed: String) extends Manager[TApiSecretState] {
       val userId = secret.userId.get
       val identifier = secret.identifier.get
       val existing = state.userSecretMap.getOrElse(userId, Nil)
-      val secrets = existing.filterNot(_.identifier == identifier)
+      val secrets = existing.filterNot(_.identifier == Some(identifier))
       val userSecretMap = state.userSecretMap + (userId -> secrets)
       val identifierLookupMap = state.identifierLookupMap - identifier
 
