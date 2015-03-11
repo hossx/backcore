@@ -118,9 +118,8 @@ object UserService extends AkkaService {
   def generateApiSecret(userId: Long) = {
     val command = DoAddNewApiSecret(userId)
     backend ? command map {
-      case ApiSecretOperationResult(error, secrets) if secrets.nonEmpty =>
-        val secret = secrets.head.identifier //secret
-        ApiResult(true, 0, "", Some(secret))
+      case ApiSecretOperationResult(error, secrets, secretOpt) if secretOpt.isDefined =>
+        ApiResult(true, 0, "", secretOpt)
       case _ => ApiResult(false, -1, "", None)
     }
   }
@@ -128,8 +127,8 @@ object UserService extends AkkaService {
   def deleteApiSecret(userId: Long, token: String) = {
     val command = DoDeleteApiSecret(ApiSecret("", Some(token), Some(userId), None))
     backend ? command map {
-      case ApiSecretOperationResult(code, _) =>
-        if (ErrorCode.Ok == code) ApiResult(true, 0, "")
+      case ApiSecretOperationResult(code, _, secretOpt) =>
+        if (ErrorCode.Ok == code) ApiResult(true, 0, "", secretOpt)
         else ApiResult(false, code.value, "")
       case x =>
         ApiResult(false, -1, x.toString)

@@ -25,14 +25,14 @@ class ApiAuthProcessor(seed: String) extends ExtendedProcessor with Processor {
   def receive = LoggingReceive {
     case p @ Persistent(DoAddNewApiSecret(userId), _) =>
       manager.addNewSecret(userId) match {
-        case Left(code) => sender ! ApiSecretOperationResult(code, manager.getUserSecrets(userId))
-        case Right(_) => sender ! ApiSecretOperationResult(ErrorCode.Ok, manager.getUserSecrets(userId))
+        case Left(code) => sender ! ApiSecretOperationResult(code, manager.getUserSecrets(userId), None)
+        case Right(secret) => sender ! ApiSecretOperationResult(ErrorCode.Ok, manager.getUserSecrets(userId), Some(secret))
       }
 
     case p @ Persistent(DoDeleteApiSecret(secret), _) =>
       manager.deleteSecret(secret) match {
-        case Left(code) => sender ! ApiSecretOperationResult(code, Nil)
-        case Right(_) => sender ! ApiSecretOperationResult(ErrorCode.Ok, Nil)
+        case Left(code) => sender ! ApiSecretOperationResult(code, Nil, None)
+        case Right(secret) => sender ! ApiSecretOperationResult(ErrorCode.Ok, Nil, Some(secret))
       }
   }
 }

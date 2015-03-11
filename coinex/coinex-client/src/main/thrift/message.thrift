@@ -195,7 +195,7 @@ typedef data.BankCard                           _BankCard
 ////////// ApiAuthProcessor
 /* C,P  */ struct DoAddNewApiSecret                       {1: i64 userId}
 /* C,P  */ struct DoDeleteApiSecret                       {1: _ApiSecret secret}
-/* R    */ struct ApiSecretOperationResult                {1: _ErrorCode error, 2: list<_ApiSecret> secrets}
+/* R    */ struct ApiSecretOperationResult                {1: _ErrorCode error, 2: list<_ApiSecret> secrets, 3: optional _ApiSecret operateSecret}
 /* Q    */ struct QueryApiSecrets                         {1: i64 userId, 2: optional string identifier}
 /* R    */ struct QueryApiSecretsResult                   {1: i64 userId, 2: list<_ApiSecret> secrets}
 /* R    */ struct QueryApiSecretByToken                   {1: string identifier}

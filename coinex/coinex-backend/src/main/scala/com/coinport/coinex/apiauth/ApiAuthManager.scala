@@ -50,7 +50,7 @@ class ApiAuthManager(initialSeed: String) extends Manager[TApiSecretState] {
   }
 
   def deleteSecret(secret: ApiSecret): Either[ErrorCode, ApiSecret] = {
-    if (secret.userId.isEmpty || secret.identifier.isEmpty) {
+    if (secret.userId.isEmpty || secret.identifier.isEmpty || state.identifierLookupMap.get(secret.identifier.get).isEmpty) {
       Left(ErrorCode.InvalidSecret)
     } else {
       val userId = secret.userId.get
