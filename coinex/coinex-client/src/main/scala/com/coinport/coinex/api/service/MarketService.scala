@@ -38,7 +38,8 @@ object MarketService extends AkkaService {
   }
 
   def getTransactions(marketSide: Option[MarketSide], tid: Option[Long], uid: Option[Long], orderId: Option[Long], skip: Int, limit: Int, fromTid: Option[Long], needCount: Boolean = true): Future[ApiResult] = {
-    val cursor = Cursor(skip, limit)
+    val newLimit = if (limit <= 0) 10 else limit
+    val cursor = Cursor(skip, newLimit)
     val queryMarketSide = marketSide.map(ms => QueryMarketSide(ms, true))
     backend ? QueryTransaction(tid, uid, orderId, queryMarketSide, cursor, fromTid, needCount) map {
       case result: QueryTransactionResult =>
