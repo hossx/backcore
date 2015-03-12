@@ -95,7 +95,8 @@ trait OrderMongoHandler {
       else query ++ (MARKET -> side.market.toString, SIDE -> side.ordered)
     }
     if (!q.oid.isDefined && q.fromOid.isDefined) query ++= (OID $lt q.fromOid.get)
-    if (!q.statusList.isEmpty) query ++= $or(q.statusList.map(STATUS -> _): _*)
+    // if (!q.statusList.isEmpty) query ++= $or(q.statusList.map(STATUS -> _): _*)
+    if (!q.statusList.isEmpty) query ++= (STATUS $in q.statusList)
     query
   }
 }
