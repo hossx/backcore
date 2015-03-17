@@ -32,7 +32,23 @@ trait TransactionBehavior {
 
   def getItems(q: QueryTransaction): Seq[Transaction] = {
     try {
-      coll.find(mkQuery(q)).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+      if (q.oid.isDefined) {
+        val basicQuery = mkQueryWithoutOr(q)
+        val queryPart1 = basicQuery ++ MongoDBObject(TAKER_ORDER_ID -> q.oid.get)
+        val queryPart2 = basicQuery ++ MongoDBObject(MAKER_ORDER_ID -> q.oid.get)
+        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        (queryPart1Result ++ queryPart2Result).distinct.sortWith((f, t) => f.id > t.id).take(q.cursor.limit)
+      } else if (q.uid.isDefined) {
+        val basicQuery = mkQueryWithoutOr(q)
+        val queryPart1 = basicQuery ++ MongoDBObject(MAKER_ID -> q.uid.get)
+        val queryPart2 = basicQuery ++ MongoDBObject(TAKER_ID -> q.uid.get)
+        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        (queryPart1Result ++ queryPart2Result).distinct.sortWith((f, t) => f.id > t.id).take(q.cursor.limit)
+      } else {
+        coll.find(mkQueryWithoutOr(q)).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+      }
     } catch {
       case e: Exception =>
         Seq.empty[Transaction]
@@ -53,10 +69,15 @@ trait TransactionBehavior {
     converter.fromBinary(obj.getAs[Array[Byte]](TRANSACTION).get, Some(classOf[Transaction.Immutable])).asInstanceOf[Transaction]
 
   private def mkQuery(q: QueryTransaction): MongoDBObject = {
-    var query = MongoDBObject()
-    if (q.tid.isDefined) query ++= MongoDBObject(TID -> q.tid.get)
+    var query = mkQueryWithoutOr(q)
     if (q.oid.isDefined) query ++= $or(TAKER_ORDER_ID -> q.oid.get, MAKER_ORDER_ID -> q.oid.get)
     if (q.uid.isDefined) query ++= $or(TAKER_ID -> q.uid.get, MAKER_ID -> q.uid.get)
+    query
+  }
+
+  private def mkQueryWithoutOr(q: QueryTransaction): MongoDBObject = {
+    var query = MongoDBObject()
+    if (q.tid.isDefined) query ++= MongoDBObject(TID -> q.tid.get)
     if (q.side.isDefined) query ++= {
       val qs = q.side.get
       val market = Market(qs.side.inCurrency, qs.side.outCurrency).toString
