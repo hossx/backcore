@@ -34,17 +34,33 @@ trait TransactionBehavior {
     try {
       if (q.oid.isDefined) {
         val basicQuery = mkQueryWithoutOr(q)
-        val queryPart1 = basicQuery ++ MongoDBObject(TAKER_ORDER_ID -> q.oid.get)
-        val queryPart2 = basicQuery ++ MongoDBObject(MAKER_ORDER_ID -> q.oid.get)
-        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
-        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        var queryPart1 = basicQuery ++ MongoDBObject(TAKER_ORDER_ID -> q.oid.get)
+        var queryPart2 = basicQuery ++ MongoDBObject(MAKER_ORDER_ID -> q.oid.get)
+
+        if (!q.fromTid.isDefined && q.cursor.skip > 0) {
+          val part1SkipSeq = coll.find(queryPart1, MongoDBObject(TID -> 1)).sort(DBObject(TID -> -1)).limit(q.cursor.skip).map(_.getAsOrElse[Long](TID, 0L)).toSeq
+          val part2SkipSeq = coll.find(queryPart2, MongoDBObject(TID -> 1)).sort(DBObject(TID -> -1)).limit(q.cursor.skip).map(_.getAsOrElse[Long](TID, 0L)).toSeq
+          val newCursor = findCursor(part1SkipSeq, part2SkipSeq)
+          queryPart1 = queryPart1 ++ (TID $lt newCursor)
+          queryPart2 = queryPart2 ++ (TID $lt newCursor)
+        }
+
+        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).limit(q.cursor.limit).map(toClass(_)).toSeq
+        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).limit(q.cursor.limit).map(toClass(_)).toSeq
         (queryPart1Result ++ queryPart2Result).distinct.sortWith((f, t) => f.id > t.id).take(q.cursor.limit)
       } else if (q.uid.isDefined) {
         val basicQuery = mkQueryWithoutOr(q)
-        val queryPart1 = basicQuery ++ MongoDBObject(MAKER_ID -> q.uid.get)
-        val queryPart2 = basicQuery ++ MongoDBObject(TAKER_ID -> q.uid.get)
-        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
-        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
+        var queryPart1 = basicQuery ++ MongoDBObject(MAKER_ID -> q.uid.get)
+        var queryPart2 = basicQuery ++ MongoDBObject(TAKER_ID -> q.uid.get)
+        if (!q.fromTid.isDefined && q.cursor.skip > 0) {
+          val part1SkipSeq = coll.find(queryPart1, MongoDBObject(TID -> 1)).sort(DBObject(TID -> -1)).limit(q.cursor.skip).map(_.getAsOrElse[Long](TID, 0L)).toSeq
+          val part2SkipSeq = coll.find(queryPart2, MongoDBObject(TID -> 1)).sort(DBObject(TID -> -1)).limit(q.cursor.skip).map(_.getAsOrElse[Long](TID, 0L)).toSeq
+          val newCursor = findCursor(part1SkipSeq, part2SkipSeq)
+          queryPart1 = queryPart1 ++ (TID $lt newCursor)
+          queryPart2 = queryPart2 ++ (TID $lt newCursor)
+        }
+        val queryPart1Result = coll.find(queryPart1).sort(DBObject(TID -> -1)).limit(q.cursor.limit).map(toClass(_)).toSeq
+        val queryPart2Result = coll.find(queryPart2).sort(DBObject(TID -> -1)).limit(q.cursor.limit).map(toClass(_)).toSeq
         (queryPart1Result ++ queryPart2Result).distinct.sortWith((f, t) => f.id > t.id).take(q.cursor.limit)
       } else {
         coll.find(mkQueryWithoutOr(q)).sort(DBObject(TID -> -1)).skip(q.cursor.skip).limit(q.cursor.limit).map(toClass(_)).toSeq
@@ -88,4 +104,6 @@ trait TransactionBehavior {
     if (!q.tid.isDefined && q.fromTid.isDefined) query ++= (TID $lt q.fromTid.get)
     query
   }
+
+  private def findCursor(p1: Seq[Long], p2: Seq[Long]) = (p1 ++ p2).distinct.sortWith((f, t) => f > t)((p1.size + p2.size) / 2 - 1)
 }
