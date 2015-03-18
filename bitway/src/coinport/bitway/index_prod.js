@@ -193,8 +193,8 @@ var xrp = {
         walletPassPhrase: "",
         trustGateway: [
             {
-                gatewayName: "ripplecn",
-                gateway: "rnuF96W4SZoCJmbHYBFoJZpR8eCaxNvekK",
+                gatewayName: "ripplefox",
+                gateway: "rKiCet8SdvWxPXnAgYarFUXMh1zCPz432Y",
                 withdrawFeeRate: 0.003
             }
         ]
