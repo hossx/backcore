@@ -1,7 +1,7 @@
 /**
  *Author: yangli - yangli@coinport.com
  *Last modified: 2014-07-19 12:58
- *Filename: btsx_proxy.js
+ *Filename: ripple_proxy.js
  *Copyright 2014 Coinport Inc. All Rights Reserved.
  */
 

@@ -20,10 +20,6 @@ singleStatistic = function(num, callback) {
                 if (jsonData.events[i].OrderSubmitted
                     && (jsonData.events[i].OrderSubmitted.originOrderInfo.side == 'BTC-CNY'  || jsonData.events[i].OrderSubmitted.originOrderInfo.side == 'CNY-BTC')
                     && jsonData.events[i].OrderSubmitted.originOrderInfo.status == 'FullyExecuted') {
-                    if (jsonData.events[i].OrderSubmitted.originOrderInfo.order.userId == '1000003706') {
-                        console.log('order: ', jsonData.events[i].OrderSubmitted.originOrderInfo);
-                        console.log('');
-                    }
                     var value = 0;
                     if (jsonData.events[i].OrderSubmitted.originOrderInfo.side == 'BTC-CNY') {
                         value = jsonData.events[i].OrderSubmitted.originOrderInfo.outAmount/100000000.0;
@@ -36,10 +32,29 @@ singleStatistic = function(num, callback) {
                     }
                     userAmountMap[jsonData.events[i].OrderSubmitted.originOrderInfo.order.userId] += value;
                 }
+
+                if (jsonData.events[i].OrderCancelled
+                    && (jsonData.events[i].OrderCancelled.side == 'BTC-CNY'  || jsonData.events[i].OrderCancelled.side == 'CNY-BTC')) {
+                    var value = 0;
+                    if (jsonData.events[i].OrderCancelled.side == 'BTC-CNY') {
+                        //value = jsonData.events[i].OrderSubmitted.originOrderInfo.outAmount/100000000.0;
+                    } else {
+                        if (jsonData.events[i].OrderCancelled.order.inAmount) {
+                            value = jsonData.events[i].OrderCancelled.order.inAmount/100000000.0;
+                            console.log(jsonData.events[i].OrderCancelled.order.userId + "" + value);
+                        } else {
+                        }
+                    }
+                    if (userAmountMap[jsonData.events[i].OrderCancelled.order.userId]) {
+                    } else {
+                        userAmountMap[jsonData.events[i].OrderCancelled.order.userId] = 0;
+                    }
+                    userAmountMap[jsonData.events[i].OrderCancelled.order.userId] += value;
+                }
             }
-            console.log('++++++++++++++++++++++++++++++');
-            console.log('userAmountMap: ', userAmountMap);
-            console.log('');
+            //console.log('++++++++++++++++++++++++++++++');
+            //console.log('userAmountMap: ', userAmountMap);
+            //console.log('');
             var userAmountArray = [];
             for (var i in userAmountMap) {
                 var userAmount = [];
@@ -48,12 +63,13 @@ singleStatistic = function(num, callback) {
                 userAmountArray.push(userAmount);
             }
             userAmountArray.sort(compareuserAmount);
+            console.log("");
             console.log(userAmountArray);
         }
     });
 }
 
-Async.times(12, singleStatistic, function(error, results) {
+Async.times(13, singleStatistic, function(error, results) {
 
 });
 
