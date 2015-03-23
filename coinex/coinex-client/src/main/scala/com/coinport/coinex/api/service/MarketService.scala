@@ -55,7 +55,7 @@ object MarketService extends AkkaService {
   def getTransactionsByOrder(marketSide: Option[MarketSide], orderId: Long, skip: Int, limit: Int, fromTid: Option[Long] = None, needCount: Boolean = true): Future[ApiResult] = getTransactions(marketSide, None, None, Some(orderId), skip, limit, fromTid, needCount)
 
   def getTransaction(tid: Long) = {
-    backend ? QueryTransaction(Some(tid), None, None, None, Cursor(0, 1)) map {
+    backend ? QueryTransaction(Some(tid), None, None, None, Cursor(0, 1), None, false) map {
       case result: QueryTransactionResult =>
         val transaction = result.transactions(0)
         val data = fromTransaction(transaction)
