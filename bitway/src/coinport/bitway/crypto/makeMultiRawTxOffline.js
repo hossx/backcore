@@ -15,7 +15,7 @@ var btc = {
         protocol: 'http',
         user: 'user',
         pass: 'pass',
-        host: 'bitway',
+        host: '127.0.0.1',
         port: '8332',
     },
     minerFee: 0.0001,
@@ -106,14 +106,15 @@ program
 
 var initData_ = function(callback) {
     program.parse(process.argv); 
-    if (program.args.length != 5) {
+    if (program.args.length != 6) {
         callback("parameter error!");
     } else {
         var currency = program.args[0]
         coldAddr = program.args[1];
         privateKeys.push(program.args[2]);
-        destAddr = program.args[3];
-        amount = program.args[4];
+        privateKeys.push(program.args[3]);
+        destAddr = program.args[4];
+        amount = program.args[5];
         var config = new Object();
         switch (currency) {
             case 'btc':
@@ -178,7 +179,7 @@ var constructRawData_ = function(callback) {
             spentAmount += recieves[i].value;
             var transaction = {txid: recieves[i].txid, vout: recieves[i].n};
             transactions.push(transaction);
-            var prevTx = {txid: recieves[i].txid, vout: recieves[i].n, scriptPubKey: recieves[i].hex};
+            var prevTx = {txid: recieves[i].txid, vout: recieves[i].n, scriptPubKey: recieves[i].hex, redeemScript: '522102cc083eaadcf2e75a0881384940023b44053f62db72dc58db9a2afb54595539ae21038a1e177e6215f14b63caec097216810b80d8b89402335e8a305b73211f9ad27352ae'};
             prevTxs.push(prevTx);
             if (spentAmount > jsonToAmount_(Number(amount))
                 || spentAmount == jsonToAmount_(Number(amount))) {
@@ -245,7 +246,7 @@ Async.auto({
 }, function(err, results) {
     if (err) {
         console.log("ERROR: ", err);
-        console.log("node makeRawTxOffline.js <currency> <coldAddress> <coldPrivateKey> <destAddress> <amount>");
+        console.log("node makeRawTxOffline.js <currency> <coldAddress> <coldPrivateKey> <coldPrivateKey> <destAddress> <amount>");
     } else {
         console.log(results);
     }
