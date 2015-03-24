@@ -9,11 +9,12 @@ import com.coinport.coinex.common.PersistentId._
 import Implicits._
 import akka.persistence.Persistent
 
-class TransactionReader(val db: MongoDB) extends ExtendedActor with TransactionBehavior with ActorLogging {
+class TransactionReader(val db: MongoDB, val index: Int) extends ExtendedActor with TransactionBehavior with ActorLogging {
   val coll = db("transactions")
 
   def receive = LoggingReceive {
     case q: QueryTransaction =>
+      println(s">>>>> use transaction reader actor index : ${index}")
       val count = if (q.needCount) countItems(q) else -1
       sender ! QueryTransactionResult(getItems(q), count)
   }

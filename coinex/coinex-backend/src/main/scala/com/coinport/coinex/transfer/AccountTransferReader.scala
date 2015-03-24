@@ -6,7 +6,7 @@ import com.coinport.coinex.data._
 import com.mongodb.casbah.Imports._
 import com.coinport.coinex.common.ExtendedActor
 
-class AccountTransferReader(val db: MongoDB) extends ExtendedActor with AccountTransferBehavior with ActorLogging {
+class AccountTransferReader(val db: MongoDB, val index: Int) extends ExtendedActor with AccountTransferBehavior with ActorLogging {
 
   lazy implicit val logger: LoggingAdapter = log
 
@@ -14,6 +14,7 @@ class AccountTransferReader(val db: MongoDB) extends ExtendedActor with AccountT
 
   def receive = LoggingReceive {
     case q: QueryTransfer =>
+      println(s">>>>> use transfer reader actor index : ${index}")
       val query = transferHandler.getQueryDBObject(q)
       val count = if (q.needCount) transferHandler.count(query) else -1
       val items = transferHandler.find(query, q.cur.skip, q.cur.limit)

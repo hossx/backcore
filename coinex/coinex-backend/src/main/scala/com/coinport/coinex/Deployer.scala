@@ -88,9 +88,11 @@ class Deployer(config: Config, hostname: String, markets: Seq[MarketSide])(impli
     deploy(Props(new MetricsView with StackableView[TMetricsState, MetricsManager]), metrics_view <<)
     deploy(Props(new ApiAuthView(apiAuthSecret) with StackableView[TApiSecretState, ApiAuthManager]), api_auth_view <<)
 
-    deploy(Props(new TransactionReader(dbForViews)), transaction_mongo_reader <<)
-    deploy(Props(new OrderReader(dbForViews)), order_mongo_reader <<)
-    deploy(Props(new AccountTransferReader(dbForViews)), account_transfer_mongo_reader <<)
+    1 to 5 foreach { i =>
+      deployMulti(Props(new TransactionReader(dbForViews, i)), transaction_mongo_reader <<, i)
+      deployMulti(Props(new OrderReader(dbForViews, i)), order_mongo_reader <<, i)
+      deployMulti(Props(new AccountTransferReader(dbForViews, i)), account_transfer_mongo_reader <<, i)
+    }
     deploy(Props(new NotificationReaderWriter(dbForViews)), notification_mongo <<)
     deploy(Props(new HistoryReader(dbForViews)), history_reader <<)
 
@@ -156,6 +158,13 @@ class Deployer(config: Config, hostname: String, markets: Seq[MarketSide])(impli
     allPaths += name
     if (cluster.selfRoles.contains(name)) {
       val actor = system.actorOf(props, name)
+      paths += actor.path.toStringWithoutAddress
+    }
+  }
+
+  private def deployMulti(props: => Props, name: String, i: Int) = {
+    if (cluster.selfRoles.contains(name)) {
+      val actor = system.actorOf(props, name + "_" + i)
       paths += actor.path.toStringWithoutAddress
     }
   }

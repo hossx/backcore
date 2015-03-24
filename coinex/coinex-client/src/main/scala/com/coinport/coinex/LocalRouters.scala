@@ -45,13 +45,14 @@ class LocalRouters(markets: Seq[MarketSide])(implicit cluster: Cluster) {
     m -> routerFor(market_depth_view << m)
   }: _*))
 
-  val transactionReader = routerFor(transaction_mongo_reader <<)
+  val transactionReader = routerForMulti(transaction_mongo_reader <<, 5)
+
   val transactionWriter = routerFor(transaction_mongo_writer <<)
 
-  val orderReader = routerFor(order_mongo_reader <<)
+  val orderReader = routerForMulti(order_mongo_reader <<, 5)
   val orderWriter = routerFor(order_mongo_writer <<)
 
-  val depositWithdrawReader = routerFor(account_transfer_mongo_reader <<)
+  val depositWithdrawReader = routerForMulti(account_transfer_mongo_reader <<, 5)
 
   val mailer = routerFor(ConstantRole.mailer <<)
 
@@ -84,6 +85,18 @@ class LocalRouters(markets: Seq[MarketSide])(implicit cluster: Cluster) {
         allowLocalRoutees = cluster.selfRoles.contains(name),
         useRole = Some(name))).props,
     name + "_router")
+
+  private def routerForMulti(name: String, num: Int) = {
+    val paths = 1 to num map { i => "/user/" + name + "_" + i }
+    system.actorOf(
+      ClusterRouterGroup(RoundRobinGroup(Nil),
+        ClusterRouterGroupSettings(
+          totalInstances = num,
+          routeesPaths = paths.toList,
+          allowLocalRoutees = true,
+          useRole = Some(name))).props,
+      name + "_router")
+  }
 
   private def bidirection(m: Map[MarketSide, ActorRef]): Map[MarketSide, ActorRef] = {
     m ++ m.map {

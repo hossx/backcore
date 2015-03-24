@@ -9,11 +9,12 @@ import com.coinport.coinex.common.{ SimpleManager, ExtendedView, ExtendedActor }
 import com.coinport.coinex.common.PersistentId._
 import akka.persistence.Persistent
 
-class OrderReader(db: MongoDB) extends ExtendedActor with OrderMongoHandler with ActorLogging {
+class OrderReader(db: MongoDB, index: Int) extends ExtendedActor with OrderMongoHandler with ActorLogging {
   val coll = db("orders")
 
   def receive = LoggingReceive {
     case q: QueryOrder =>
+      println(s">>>>> use order reader actor index : ${index}")
       val count = if (q.needCount) countItems(q) else -1
       sender ! QueryOrderResult(getItems(q), count)
   }
