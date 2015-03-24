@@ -214,7 +214,7 @@ typedef data.BankCard                           _BankCard
 /* C,P  */ struct DoRemoveRobotDNA                        {1: i64 dnaId}
 
 ////////// Mailer
-/* C    */ struct DoSendEmail                             {1: string email, 2: _EmailType emailType, 3: map<string, string> params, 4: optional string versionOpt, 5: optional string langOpt}
+/* C    */ struct DoSendEmail                             {1: string email, 2: _EmailType emailType, 3: map<string, string> params, 4: optional string versionOpt, 5: optional string langOpt, 6: optional string tplName}
 
 ////////// BitwayProcessor
 /* C    */ struct AllocateNewAddress                      {1: _Currency currency, 2: i64 userId, 3: optional string assignedAddress}

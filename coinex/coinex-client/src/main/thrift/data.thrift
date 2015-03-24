@@ -133,6 +133,7 @@ enum EmailType {
     MONITOR = 4
     VERIFICATION_CODE = 5
     WITHDRAWAL_NOTIFICATION = 6
+    OTHERS = 7
 }
 
 enum ChartTimeDimension {

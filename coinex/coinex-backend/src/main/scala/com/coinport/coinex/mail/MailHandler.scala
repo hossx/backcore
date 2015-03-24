@@ -12,4 +12,5 @@ trait MailHandler {
   def sendMonitor(to: String, params: Seq[(String, String)]): Unit
   def sendVerificationCodeEmail(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]): Unit
   def sendWithdrawalNotification(to: String, params: Seq[(String, String)], v: Option[String], lang: Option[String]): Unit
+  def sendEmailWithTemplate(to: String, tplName: String, params: Seq[(String, String)]): Unit
 }

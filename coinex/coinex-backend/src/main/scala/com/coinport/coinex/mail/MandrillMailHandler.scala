@@ -91,6 +91,10 @@ class MandrillMailHandler(mandrillApiKey: String)(implicit val system: ActorSyst
     sendMail(to, newWithdrawalTemplate, params)
   }
 
+  def sendEmailWithTemplate(to: String, tplName: String, params: Seq[(String, String)]) = {
+    sendMail(to, tplName, params)
+  }
+
   private def sendMail(to: String, template: String, params: Seq[(String, String)]) = {
     val mergeVars = params.map { case (k, v) => MergeVar(k, v) }
     val req = SendTemplateRequest(template, Message(to.split(";").map((i: String) => To(i)).toSeq, mergeVars))

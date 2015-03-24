@@ -13,7 +13,7 @@ import akka.event.LoggingReceive
 class Mailer(handler: MailHandler) extends Actor with ActorLogging {
 
   def receive = LoggingReceive {
-    case request @ DoSendEmail(email, emailType, params, v, lang) =>
+    case request @ DoSendEmail(email, emailType, params, v, lang, tplName) =>
       log.info("{}", request)
       emailType match {
         case EmailType.RegisterVerify =>
@@ -33,6 +33,10 @@ class Mailer(handler: MailHandler) extends Actor with ActorLogging {
 
         case EmailType.WithdrawalNotification =>
           handler.sendWithdrawalNotification(email, params.toSeq, v, lang)
+
+        case EmailType.Others if tplName.isDefined =>
+          handler.sendEmailWithTemplate(email, tplName.get, params.toSeq)
+          sender ! "complete"
       }
   }
 }
