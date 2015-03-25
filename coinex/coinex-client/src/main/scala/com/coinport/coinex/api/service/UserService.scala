@@ -511,4 +511,9 @@ object UserService extends AkkaService {
     }
   }
 
+  def sendEdm(email: String, tpl: String) = {
+    backend ? DoSendEmail(email, EmailType.Others, null, tplName = Some(tpl)) map {
+      case r => ApiResult(true, 0, "", None)
+    }
+  }
 }
