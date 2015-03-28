@@ -59,6 +59,7 @@ var CryptoProxy = module.exports.CryptoProxy = function(currency, opt_config) {
       host: opt_config.cryptoRpcConfig.host,
       path: '/rpc',
       method: 'POST',
+      timeout:10000,
       port: opt_config.cryptoRpcConfig.port,
       agent: this.disableAgent ? false : undefined,                   
     };
@@ -105,12 +106,12 @@ CryptoProxy.prototype.httpRequest_ = function(request, callback) {
 
         res.on('end', function() {
             if(res.statusCode == 401) {
-                self.log.info(new Error('bitcoin JSON-RPC connection rejected: 401 unauthorized'));
+                self.log.info(new Error('btsx JSON-RPC connection rejected: 401 unauthorized'));
                 return;
             }
 
             if(res.statusCode == 403) {
-                self.log.info(new Error('bitcoin JSON-RPC connection rejected: 403 forbidden'));
+                self.log.info(new Error('btsx JSON-RPC connection rejected: 403 forbidden'));
                 return;
             }
 
@@ -133,7 +134,7 @@ CryptoProxy.prototype.httpRequest_ = function(request, callback) {
     });
 
     req.on('error', function(e) {
-        var err = new Error('Could not connect to bitcoin via RPC: '+e.message);
+        var err = new Error('Could not connect to btsx via RPC: '+e.message);
         self.log.error(err);
     });
 
@@ -940,7 +941,7 @@ CryptoProxy.prototype.getBlockHash_ = function(height, callback) {
     self.httpRequest_(request, function(error, result) {
         if(!error) {
             self.log.info("getBlockHash_ result: ", result);
-            callback(null, result.result);
+            callback(null, result.result.id);
         } else {
             self.log.error("getBlockHash_ error: ", error);
             callback(error, null);
