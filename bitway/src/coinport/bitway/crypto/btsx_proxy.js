@@ -128,6 +128,7 @@ CryptoProxy.prototype.httpRequest_ = function(request, callback) {
             } catch(e) {
                 self.log.error("e.stack", e.stack);
                 self.log.error('HTTP Status code:' + res.statusCode);
+                callback("http error", null);
                 return;
             }
         });
@@ -743,7 +744,11 @@ CryptoProxy.prototype.getBlockCount_ = function(callback) {
     self.log.info("getBlockCount_ request: ", request);
     self.httpRequest_(request, function(error, result) {
         self.log.info("getBlockCount_ result: ", result);
-        CryptoProxy.invokeCallback_(error, function() {return result.result}, callback);
+        if (error) {
+            CryptoProxy.invokeCallback_(error, function() {return error}, callback);
+        } else {
+            CryptoProxy.invokeCallback_(error, function() {return result.result}, callback);
+        }
     });
 };
 
