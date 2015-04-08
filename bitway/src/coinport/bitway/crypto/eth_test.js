@@ -29,17 +29,6 @@ var Async                         = require('async'),
     http                          = require('http');
 var request = require('request');
 
-var requestBody = {
-   "jsonrpc":"2.0",
-   //"method": "eth_coinbase",                                                              
-   //"method": "eth_mining",                                                              
-   //"method": "eth_gasPrice",                                                              
-   //"method": "eth_accounts",                                                              
-   "method": "eth_blockNumber",                                                              
-   "params": [                                                                    
-    ],
-   "id":64
-};      
 
 var requestBody = {
    "jsonrpc":"2.0",
@@ -62,26 +51,8 @@ var requestBody = {
 };      
 
 
-var requestBody = {
-   "jsonrpc":"2.0",
-   "method": "eth_getBlockByNumber",                                                              
-   "params": [                                                                    
-       '0x0',
-       true
-    ],
-   "id":64
-};      
 
 
-var requestBody = {
-   "jsonrpc":"2.0",
-   "method": "eth_getBlockByHash",                                                              
-   "params": [                                                                    
-       '0xfd4af92a79c7fc2fd8bf0d342f2e832e1d4f485c85b9152d2039e03bc604fdca',
-       true
-    ],
-   "id":64
-};      
 
 
 var requestBody = {
@@ -103,6 +74,41 @@ var requestBody = {
    "id":64
 };      
 
+
+
+var requestBody = {
+   "jsonrpc":"2.0",
+   "method": "eth_getBlockByHash",                                                              
+   "params": [                                                                    
+       '0xfd4af92a79c7fc2fd8bf0d342f2e832e1d4f485c85b9152d2039e03bc604fdca',
+       true
+    ],
+   "id":64
+};      
+
+
+var requestBody = {
+   "jsonrpc":"2.0",
+   //"method": "eth_coinbase",                                                              
+   //"method": "eth_mining",                                                              
+   //"method": "eth_gasPrice",                                                              
+   //"method": "eth_accounts",                                                              
+   "method": "eth_blockNumber",                                                              
+   "params": [                                                                    
+    ],
+   "id":64
+};      
+
+
+var requestBody = {
+   "jsonrpc":"2.0",
+   "method": "eth_getBlockByNumber",                                                              
+   "params": [                                                                    
+       '0x0',
+       true
+    ],
+   "id":64
+};      
 request({
     method: 'POST',
     url: 'http://localhost:8080',
@@ -117,6 +123,6 @@ request({
         var responseBody = JSON.parse(body);
         console.log(responseBody);
     } else {
-        self.log.error("sign_ error", error);
+        console.error("sign_ error", error);
     }
 });
