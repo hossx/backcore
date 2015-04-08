@@ -1,8 +1,8 @@
 /**
  *Author: yangli - yangli@coinport.com
- *Last modified: 2014-06-12 20:39
- *Filename: monitorColdWallet.js
- *Copyright 2014 Coinport Inc. All Rights Reserved.
+ *Last modified: 2015-02-12 20:39
+ *Filename: statistic.js
+ *Copyright 2015 Coinport Inc. All Rights Reserved.
  */
 var fs = require('fs');
 var Async = require('async');
@@ -52,9 +52,6 @@ singleStatistic = function(num, callback) {
                     userAmountMap[jsonData.events[i].OrderCancelled.order.userId] += value;
                 }
             }
-            //console.log('++++++++++++++++++++++++++++++');
-            //console.log('userAmountMap: ', userAmountMap);
-            //console.log('');
             var userAmountArray = [];
             for (var i in userAmountMap) {
                 var userAmount = [];
