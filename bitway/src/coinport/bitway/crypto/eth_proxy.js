@@ -27,6 +27,7 @@ var Async                         = require('async'),
     CryptoAddress                 = DataTypes.CryptoAddress,
     SyncHotAddressesResult        = MessageTypes.SyncHotAddressesResult,
     http                          = require('http');
+var request = require('request');
 
 /**
  * Handle the crypto currency network event
@@ -93,61 +94,36 @@ CryptoProxy.prototype.logFunction = function log(type) {
     };
 };
 
-CryptoProxy.prototype.httpRequest_ = function(request, callback) {
-    var self = this;
-    var err = null;
-    var auth = Buffer(self.rpcUser + ':' + self.rpcPass).toString('base64');
-    var req = http.request(self.httpOptions, function(res) {
-        var buf = '';
+var basicInfo = {
+    method: 'POST',
+    url: 'http://localhost:8080',
+    timeout: 10000,
+    headers: {
+      'Content-Type': 'application/json',
+    }
+};
 
-        res.on('data', function(data) {
-            buf += data; 
-        });
-
-        res.on('end', function() {
-            if(res.statusCode == 401) {
-                self.log.info(new Error('eth JSON-RPC connection rejected: 401 unauthorized'));
-                callback("eth JSON-RPC connection rejected: 401 unauthorized error", null);
-            }
-
-            if(res.statusCode == 403) {
-                self.log.info(new Error('eth JSON-RPC connection rejected: 403 forbidden'));
-                callback("eth JSON-RPC connection rejected: 403 forbidden", null);
-            }
-
-            if(err) {
-                self.log.error('httpRequest error: ', err);
-                callback("httpRequest error", null);
-            }
-
-            try {
-                var pos = buf.indexOf('{');
-                var body = buf.substring(pos, buf.length);
-                var parsedBuf = JSON.parse(body.data || body);
-                callback(null, parsedBuf);
-            } catch(e) {
-                self.log.error("e.stack", e.stack);
-                self.log.error('HTTP Status code:' + res.statusCode);
-                callback("http error", null);
-            }
-        });
+CryptoProxy.prototype.rpcRequest_ = function (requestBody, callback) {
+    console.log("basicInfo %j", basicInfo);
+    console.log("requestBody %j", requestBody);
+    request({
+        method: basicInfo.method,
+        url: basicInfo.url,
+        timeout: basicInfo.timeout,
+        headers: basicInfo.headers,
+        body: JSON.stringify(requestBody)
+    }, function (error, response, body) {
+        if (!error && response.statusCode == 200 && body) {
+            console.log('Response:', body);
+            var responseBody = JSON.parse(body);
+            console.log(responseBody);
+            callback(null, body);
+        } else {
+            console.error("sign_ error", error);
+            callback("error", null);
+        }
     });
-
-    req.on('error', function(e) {
-        var err = new Error('Could not connect to eth via RPC: '+e.message);
-        self.log.error(err);
-        callback("Could not connect to eth via RPC", null);
-    });
-
-    req.setHeader('Accept', 'application/json, text/plain, */*');
-    req.setHeader('Connection', 'keep-alive');
-    req.setHeader('Content-Length', request.length);
-    req.setHeader('Content-Type', 'application/json;charaset=UTF-8');
-    req.setHeader('Authorization', 'Basic ' + auth);
-    req.setHeader('Accept-Encoding', 'gzip,deflate,sdch');
-    req.write(request);
-    req.end();
-}
+};
 
 CryptoProxy.prototype.generateUserAddress = function(request, callback) {
     var self = this;
@@ -173,29 +149,17 @@ CryptoProxy.prototype.syncPrivateKeys =  function(request, callback) {
     self.log.info("syncPrivateKeys do nothing");
 };
 
-CryptoProxy.prototype.transfer = function(request, callback) {
-    var self = this;
-    self.log.info('** TransferRequest Received **');
-    self.log.info("transfer req: " + JSON.stringify(request));
-    var ids = [];
-    for (var i = 0; i < request.transferInfos.length; i++) {
-        self.makeTransfer_.bind(self)(request.type, request.transferInfos[i]);
-    }
-};
-
 CryptoProxy.prototype.sendTransaction_ = function(type, from, to, value) {
     var self = this;
-    var params = [];
-    params.push(amount);
-    params.push("BTS");
-    params.push(from);
-    params.push(to);
-    params.push(memo);
-    var requestBody = {jsonrpc: '2.0', id: 2, method: "wallet_transfer", params: params};
-    var request = JSON.stringify(requestBody);
-    self.log.info("walletTransfer_ request: ", request);
-    self.httpRequest_(request, function(error, result) {
-        self.log.info("walletTransfer_ result: ", result);
+    var params = {
+        "from": from, 
+        "to": to,
+        "value": value
+    };
+    var requestBody = {jsonrpc: '2.0', id: 2, method: "eth_sendTransaction", params: params};
+    self.log.info("sendTransaction_ request: ", requestBody);
+    self.rpcRequest_(requestBody, function(error, result) {
+        self.log.info("sendTransaction_ result: ", result);
         if (!error && result.result) {
             var cctx = new CryptoCurrencyTransaction({ids: [], status: TransferStatus.CONFIRMING});
             cctx.ids.push(id);
@@ -232,6 +196,16 @@ CryptoProxy.prototype.makeTransfer_ = function(type, transferInfo) {
     }
 };
 
+CryptoProxy.prototype.transfer = function(request, callback) {
+    var self = this;
+    self.log.info('** TransferRequest Received **');
+    self.log.info("transfer req: " + JSON.stringify(request));
+    var ids = [];
+    for (var i = 0; i < request.transferInfos.length; i++) {
+        self.makeTransfer_.bind(self)(request.type, request.transferInfos[i]);
+    }
+};
+
 CryptoProxy.prototype.multi_transfer = function(request, callback) {
     var self = this;
     self.log.info('**Multi Transfer Request Received **');
@@ -250,17 +224,6 @@ CryptoProxy.prototype.convertAmount_ = function(value) {
     return value/100000;
 };
 
-CryptoProxy.prototype.start = function() {
-    var self = this;
-    self.checkBlockAfterDelay_();
-};
-
-CryptoProxy.prototype.checkBlockAfterDelay_ = function(opt_interval) {
-    var self = this;
-    var interval = self.checkInterval;
-    opt_interval != undefined && (interval = opt_interval)
-    setTimeout(self.checkBlock_.bind(self), interval);
-};
 
 CryptoProxy.prototype.getMissedBlocks = function(request, callback) {
     var self = this;
@@ -345,6 +308,18 @@ CryptoProxy.prototype.getReorgBlock_ = function(index, callback) {
     }
 };
 
+CryptoProxy.prototype.start = function() {
+    var self = this;
+    self.checkBlockAfterDelay_();
+};
+
+CryptoProxy.prototype.checkBlockAfterDelay_ = function(opt_interval) {
+    var self = this;
+    var interval = self.checkInterval;
+    opt_interval != undefined && (interval = opt_interval)
+    setTimeout(self.checkBlock_.bind(self), interval);
+};
+
 CryptoProxy.prototype.checkBlock_ = function() {
     var self = this;
     self.getNextCCBlock_(function(error, result){
@@ -400,9 +375,8 @@ CryptoProxy.prototype.getNextCCBlockSinceLastIndex_ = function(index, callback) 
 CryptoProxy.prototype.getBlockCount_ = function(callback) {
     var self = this;
     var requestBody = {jsonrpc: '2.0', id: 1, method: "eth_blockNumber", params: []};
-    var request = JSON.stringify(requestBody);
     self.log.info("getBlockCount_ request: ", request);
-    self.httpRequest_(request, function(error, result) {
+    self.rpcRequest_(requestBody, function(error, result) {
         self.log.info("getBlockCount_ result: ", result);
         if (error) {
             CryptoProxy.invokeCallback_(error, function() {return error}, callback);
@@ -435,6 +409,7 @@ CryptoProxy.prototype.getCCBlockByIndex_ = function(index, callback) {
 
 CryptoProxy.prototype.getCCTxByTxHash_ = function(txHash, callback) {
     var self = this;
+    
 
 };
 
@@ -536,13 +511,12 @@ CryptoProxy.prototype.getBlockHash_ = function(height, callback) {
     self.log.info("Enter into getBlockHash_ height:", height);
     var params = [];
     params.push(height);
-    var requestBody = {jsonrpc: '2.0', id: 2, method: "blockchain_get_blockhash", params: params};
-    var request = JSON.stringify(requestBody);
+    var requestBody = {jsonrpc: '2.0', id: 2, method: "eth_getBlockByNumber", params: params};
     self.log.info("getBlockHash_ request: ", request);
-    self.httpRequest_(request, function(error, result) {
+    self.rpcRequest_(requestBody, function(error, result) {
         if(!error) {
             self.log.info("getBlockHash_ result: ", result);
-            callback(null, result.result.id);
+            callback(null, result.result.hash);
         } else {
             self.log.error("getBlockHash_ error: ", error);
             callback(error, null);

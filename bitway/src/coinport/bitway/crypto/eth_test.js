@@ -66,13 +66,6 @@ var requestBody = {
 };      
 
 
-var requestBody = {
-   "jsonrpc":"2.0",
-   "method": "eth_getWork",                                                              
-   "params": [                                                                    
-    ],
-   "id":64
-};      
 
 
 
@@ -109,20 +102,46 @@ var requestBody = {
     ],
    "id":64
 };      
-request({
+
+var requestBody = {
+   "jsonrpc":"2.0",
+   "method": "eth_getWork",                                                              
+   "params": [                                                                    
+    ],
+   "id":64
+};      
+var basicInfo = {
     method: 'POST',
     url: 'http://localhost:8080',
     timeout: 10000,
     headers: {
       'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody)
-}, function (error, response, body) {
-    if (!error && response.statusCode == 200 && body) {
-        console.log('Response:', body);
-        var responseBody = JSON.parse(body);
-        console.log(responseBody);
-    } else {
-        console.error("sign_ error", error);
     }
+};
+
+var rpcRequest = function (basicInfo, requestBody, callback) {
+    console.log("basicInfo %j", basicInfo);
+    console.log("requestBody %j", requestBody);
+    request({
+        method: basicInfo.method,
+        url: basicInfo.url,
+        timeout: basicInfo.timeout,
+        headers: basicInfo.headers,
+        body: JSON.stringify(requestBody)
+    }, function (error, response, body) {
+        if (!error && response.statusCode == 200 && body) {
+            console.log('Response:', body);
+            var responseBody = JSON.parse(body);
+            console.log(responseBody);
+            callback(null, body);
+        } else {
+            console.error("sign_ error", error);
+            callback("error", null);
+        }
+    });
+};
+
+rpcRequest(basicInfo, requestBody, function(error, result) {
+    console.log("error %j", error);
+    console.log("result %j", result);
 });
