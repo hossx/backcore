@@ -409,38 +409,23 @@ CryptoProxy.prototype.getCCBlockByIndex_ = function(index, callback) {
 
 CryptoProxy.prototype.getCCTxByTxHash_ = function(txHash, callback) {
     var self = this;
-    
-
-};
-
-CryptoProxy.prototype.completeTransactions_ = function(blockInfo, callback) {
-    var self = this;
-    Async.map(blockInfo.txs, self.getCCTxByTxHash_.bind(self), function(error, results) {
+    var params = {
+        txHash,
+    };
+    var requestBody = {jsonrpc: '2.0', id: 2, method: "eth_getTransactionByHash", params: params};
+    self.rpcRequest(requestBody, function(error, result) {
         if(!error) {
-            callback(null, block);
-        } else {
-            self.log.error("completeTransactions_ error: " + error);
-            callback(error);
-        }
-    });
-}
-
-CryptoProxy.prototype.constructCCTXByTxHistory_ = function(txHistory, callback) {
-    var self = this;
-    var inputs = [];
-    self.log.info("txHistory %j: ", txHistory);
-    var ledger_entries = txHistory.ledger_entries;
-    self.log.info("ledger_entries: ", ledger_entries);
-
-    Async.parallel ([
-        function(cb) {self.constructInputs_.bind(self)(ledger_entries, cb)},
-        function(cb) {self.constructOutputs_.bind(self)(ledger_entries, cb)}
-        ], function(err, results){
-        if (!err) {
-            results[0][0].amount += self.convertAmount_(txHistory.fee.amount);
-            var cctx = new CryptoCurrencyTransaction({sigId: txHistory.trx_id, txid: txHistory.trx_id,
-                ids: [], inputs: results[0], outputs: results[1], 
-                minerFee: self.convertAmount_(txHistory.fee.amount)});
+            var inputs = [];
+            var outputs = [];
+            var input = new CryptoCurrencyTransactionPort({address: result.result.from,
+                amount: result.result.value});
+            var output = new CryptoCurrencyTransactionPort({address: result.result.to,
+                amount: result.result.value});
+            inputs.push(input);
+            outputs.push(output);
+            var cctx = new CryptoCurrencyTransaction({sigId: result.result.hash, txid: result.result.hash,
+                ids: [], inputs: inputs, outputs: outputs, 
+                minerFee: 0});//TODO
             self.redis.get(cctx.sigId, function(error, id) {
                 if (!error) {
                     if (id) {
@@ -453,58 +438,24 @@ CryptoProxy.prototype.constructCCTXByTxHistory_ = function(txHistory, callback) 
                 }
             });
         } else {
-            self.log.error("constructCCTXByTxHistory_", error);
+            callback("error", null);
+        }
+    });
+};
+
+CryptoProxy.prototype.completeTransactions_ = function(blockInfo, callback) {
+    var self = this;
+    Async.map(blockInfo.txs, self.getCCTxByTxHash_.bind(self), function(error, results) {
+        if(!error) {
+            block = new CryptoCurrencyBlock(index: blockInfo.index, prevIndex: blockInfo.prevIndex,
+                txs: results);
+            callback(null, block);
+        } else {
+            self.log.error("completeTransactions_ error: " + error);
             callback(error, null);
         }
     });
-};
-
-CryptoProxy.prototype.constructInputs_ = function(ledgerEntries, callback) {
-    var self = this;
-    var inputAccountNames = [];
-    for (var i = 0; i < ledgerEntries.length; i++) {
-        inputAccountNames.push(ledgerEntries[i].from_account);
-    }
-    Async.map(inputAccountNames, self.getAccountByAccountName_.bind(self), function(errors, results) {
-        if (!errors) {
-            var inputs = [];
-            for (var i = 0; i < results.length; i++) {
-                var input = new CryptoCurrencyTransactionPort({accountName: results[i].accountName,
-                    address: results[i].address,
-                    amount: self.convertAmount_(ledgerEntries[i].amount.amount)});
-                inputs.push(input);
-            }
-            callback(null, inputs);
-       } else {
-           callback(errors, null);
-       }
-   });
-};
-
-CryptoProxy.prototype.constructOutputs_ = function(ledgerEntries, callback) {
-    var self = this;
-    var outputAccountNames = [];
-    for (var i = 0; i < ledgerEntries.length; i++) {
-        outputAccountNames.push(ledgerEntries[i].to_account);
-    }
-    Async.map(outputAccountNames, self.getAccountByAccountName_.bind(self), function(errors, results) {
-        if (!errors) {
-            var outputs = [];
-            for (var i = 0; i < results.length; i++) {
-                var output = new CryptoCurrencyTransactionPort({accountName: results[i].accountName,
-                    address: results[i].address,
-                    amount: self.convertAmount_(ledgerEntries[i].amount.amount)});
-                if (output.accountName == self.hotAccountName) {
-                    output.memo = ledgerEntries[i].memo;
-                }
-                outputs.push(output);
-            }
-            callback(null, outputs);
-        } else {
-            callback(errors, null);
-        }
-    });
-};
+}
 
 CryptoProxy.prototype.getBlockHash_ = function(height, callback) {
     var self = this;
