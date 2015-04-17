@@ -12,6 +12,7 @@ var CryptoAgent = require('./crypto_agent').CryptoAgent,
     Currency    = DataTypes.Currency,
     BtsxCryptoProxy = require('./btsx_proxy').CryptoProxy;
     RippleCryptoProxy = require('./ripple_proxy').CryptoProxy;
+    EthCryptoProxy = require('./eth_proxy').CryptoProxy;
 
 var CryptoAgentManager = module.exports.CryptoAgentManager = function(configs) {
     this.agents = [];
@@ -28,8 +29,12 @@ var CryptoAgentManager = module.exports.CryptoAgentManager = function(configs) {
         } else if (config.currency == Currency.XRP) {
             console.log("XRP");
             var cryptoProxy = new RippleCryptoProxy(config.currency, cryptoConfig);
+        } else if (config.currency == Currency.ETH){
+            console.log("ETH");
+            var cryptoProxy = new EthCryptoProxy(config.currency, cryptoConfig);
         } else {
             console.log(config.currency.toString());
+            console.log("%j", cryptoConfig.cryptoRpcConfig);
             cryptoConfig.cryptoRpc = new RpcClient(cryptoConfig.cryptoRpcConfig);
             var cryptoProxy = new CryptoProxy(config.currency, cryptoConfig);
         }

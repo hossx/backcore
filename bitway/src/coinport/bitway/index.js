@@ -161,7 +161,6 @@ var zet = {
     }
 };
 
-
 var btsx = {
     currency: Currency.BTSX,
     cryptoConfig: {
@@ -185,7 +184,6 @@ var btsx = {
     }
 };
 
-
 var xrp = {
     currency: Currency.XRP,
     cryptoConfig: {
@@ -208,8 +206,23 @@ var xrp = {
     }
 };
 
+var eth = {
+    currency: Currency.ETH,
+    cryptoConfig: {
+        rpcUrl: 'http://localhost:8545',
+        hotAccount: "b5deb39ddb92d437cc83fab49bb0a5c18c60e33c",
+        checkInterval : 10000,
+        secret: "unkonwn password",
+    },
+    redisProxyConfig: {
+        currency: Currency.ETH,
+        ip: '127.0.0.1',
+        port: '6379',
+    }
+};
+
 // var configs = [ btc, ltc, dog, drk, bc, vrc, zet ];
-var configs = [ xrp ];
+var configs = [ eth ];
 
 
 fs.readFile('./pw', function(error, data){
