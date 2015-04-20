@@ -141,5 +141,16 @@ BitwayConfigs(Map(
     isDepositHot = true,
     enableFetchAddress = false,
     enableUsersToInnerTransfer = false
-  )
+  ),
+  Eth -> BitwayConfig(
+    ip = "bitway",
+    port = 6379,
+    maintainedChainLength = 120,
+    enableHotColdTransfer = false,
+    confirmNum = 1,
+    userIdFromMemo = true,
+    isDepositHot = true,
+    enableFetchAddress = false,
+    enableUsersToInnerTransfer = false
+  ),
 ))
