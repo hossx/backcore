@@ -482,7 +482,7 @@ CryptoProxy.prototype.getBlockByNumber_ = function(height, callback) {
     var requestBody = {jsonrpc: '2.0', id: 2, method: "eth_getBlockByNumber", params: params};
     self.log.info("getBlockByNumber_ request: ", requestBody);
     self.rpcRequest_(requestBody, function(error, result) {
-        if(!error) {
+        if(!error && result.result) {
             self.log.info("getBlockByNumber_ result: ", result);
             var blockInfo = {};
             blockInfo.index = web3.toDecimal(result.result.number);
@@ -498,7 +498,11 @@ CryptoProxy.prototype.getBlockByNumber_ = function(height, callback) {
             callback(null, blockInfo);
         } else {
             self.log.error("getBlockByNumber_ error: ", error);
-            callback(error, null);
+            if (error) {
+                callback(error, null);
+            } else {
+                callback("nothing", null);
+            }
         }
     });
 };
