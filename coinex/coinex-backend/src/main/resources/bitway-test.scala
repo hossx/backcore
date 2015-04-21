@@ -117,5 +117,5 @@ BitwayConfigs(Map(
     isDepositHot = true,
     enableFetchAddress = false,
     enableUsersToInnerTransfer = false
-  ),
+  )
 ))

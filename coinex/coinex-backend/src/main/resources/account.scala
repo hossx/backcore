@@ -69,7 +69,7 @@ AccountConfig(
       Nxt -> ConstantFee(2.internalValue(Nxt)),
       Xrp -> ConstantFee(1.internalValue(Xrp)),
       Cny -> LadderFee(500.internalValue(Cny), 2.internalValue(Cny), 0.004),
-      Eth -> ConstantFee(1.internalValue(Eth)),
+      Eth -> ConstantFee(1.internalValue(Eth))
       ),
 
     freeOfTxChargeUserIdThreshold = 1E9.toLong + 1000 // first 1000 users
