@@ -61,7 +61,7 @@ var CryptoProxy = module.exports.CryptoProxy = function(currency, opt_config) {
 
     this.lastIndex = this.currency + '_last_index';
     this.log = Logger.logger(this.currency.toString());
-    this.hotAccountName = opt_config.hotAccountName;
+    this.hotAccount = opt_config.hotAccount;
     this.secret = opt_config.secret;
 };
 
@@ -459,6 +459,8 @@ CryptoProxy.prototype.getBlockHash_ = function(height, callback) {
     self.log.info("Enter into getBlockHash_ height:", height);
     var params = [];
     params.push(height);
+    var flag = true;
+    params.push(flag);
     var requestBody = {jsonrpc: '2.0', id: 2, method: "eth_getBlockByNumber", params: params};
     self.log.info("getBlockHash_ request: ", requestBody);
     self.rpcRequest_(requestBody, function(error, result) {

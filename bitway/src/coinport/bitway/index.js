@@ -210,7 +210,7 @@ var eth = {
     currency: Currency.ETH,
     cryptoConfig: {
         rpcUrl: 'http://localhost:8545',
-        hotAccount: "b5deb39ddb92d437cc83fab49bb0a5c18c60e33c",
+        hotAccount: "0x76b01dbf75111e85eba70b17cd1abde02885563d",
         checkInterval : 10000,
         secret: "unkonwn password",
     },

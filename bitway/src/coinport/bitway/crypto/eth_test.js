@@ -163,18 +163,11 @@ var requestBody = {
        'from': 'b5deb39ddb92d437cc83fab49bb0a5c18c60e33c',
        'to':   '0x76b01dbf75111e85eba70b17cd1abde02885563d',
        'value': "0x72a",
-       'data':  "1000001423"
+       'data':  "1000000000"
    }],
    "id":64
 };      
 
-rpcRequest(basicInfo, requestBody, function(error, result) {
-    var response = JSON.parse(result);
-    console.log("error %j", error);
-    console.log('response', response);
-    //var value = web3.toDecimal(response.result.value);
-    //console.log(value); // true
-});
 
 var rpcRequest = function (basicInfo, requestBody, callback) {
     console.log("basicInfo %j", basicInfo);
@@ -196,3 +189,12 @@ var rpcRequest = function (basicInfo, requestBody, callback) {
         }
     });
 };
+
+
+rpcRequest(basicInfo, requestBody, function(error, result) {
+    var response = JSON.parse(result);
+    console.log("error %j", error);
+    console.log('response', response);
+    //var value = web3.toDecimal(response.result.value);
+    //console.log(value); // true
+});
