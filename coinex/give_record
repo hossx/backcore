@@ -28,3 +28,5 @@ date        from         id          amount     currency  reason
 2015-02-13  1000000013   1000001436  5000       xrp       k line maker use
 2015-02-13  1000001419   1000001436  30         ltc       k line maker use
 2015-04-13  1000005354   1000005458  50         cny       fix the wrong deposit
+2015-04-25  1000003258   1000003285  1000       cny       fix the wrong deposit
+2015-04-30  1000003875   1000003857  300        cny       fix the wrong deposit
