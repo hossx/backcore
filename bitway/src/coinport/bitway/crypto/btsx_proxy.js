@@ -279,8 +279,9 @@ CryptoProxy.prototype.walletTransfer_ = function(type, amount, from, to, id, mem
                 self.makeNormalResponse_(BitwayResponseType.TRANSACTION, self.currency, cctx));
         } else {
             self.log.info("error: ", error);
-            var response = new CryptoCurrencyTransaction({ids: id, txType: type, 
+            var response = new CryptoCurrencyTransaction({ids: [], txType: type, 
                 status: TransferStatus.FAILED});
+            response.ids.push(id);
             self.emit(CryptoProxy.EventType.TX_ARRIVED,
                 self.makeNormalResponse_(BitwayResponseType.TRANSACTION, self.currency, response));
         }
