@@ -250,7 +250,7 @@ CryptoProxy.prototype.transfer = function(request, callback) {
     }
 };
 
-CryptoProxy.prototype.convertAmount_ = function(value) {
+CryptoProxy.prototype.convertPrecise_ = function(value) {
     var tmp = Math.round(1e6 * value)/1e6;
     return tmp.toFixed(2);
 };
@@ -258,7 +258,7 @@ CryptoProxy.prototype.convertAmount_ = function(value) {
 CryptoProxy.prototype.walletTransfer_ = function(type, amount, from, to, id, memo) {
     var self = this;
     var params = [];
-    params.push(self.convertAmount_(amount));
+    params.push(self.convertPrecise_(amount));
     params.push("BTS");
     params.push(from);
     params.push(to);
