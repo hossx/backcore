@@ -251,7 +251,8 @@ CryptoProxy.prototype.transfer = function(request, callback) {
 };
 
 CryptoProxy.prototype.convertAmount_ = function(value) {
-    return Math.round(1e6 * value)/1e6;
+    var tmp = Math.round(1e6 * value)/1e6;
+    return tmp.toFixed(2);
 };
 
 CryptoProxy.prototype.walletTransfer_ = function(type, amount, from, to, id, memo) {
