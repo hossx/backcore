@@ -99,8 +99,15 @@ class AccountManager(initialLastOrderId: Long = 0L) extends Manager[TAccountStat
 
   def updateCashAccount(accounts: Map[Currency, CashAccount], adjustment: CashAccount) = {
     val current = accounts.getOrElse(adjustment.currency, CashAccount(adjustment.currency, 0, 0, 0))
-    val updated = current + adjustment
-    assert(updated.isValid)
+    var updated = current + adjustment
+    if (!updated.isValid) {
+      log.error("assertion failed! " + updated)
+      updated = CashAccount(
+        updated.currency,
+        math.max(0, updated.available),
+        math.max(0, updated.locked),
+        math.max(0, updated.pendingWithdrawal))
+    }
     accounts += (adjustment.currency -> updated)
   }
 
@@ -125,11 +132,25 @@ class AccountManager(initialLastOrderId: Long = 0L) extends Manager[TAccountStat
       updateCryptoAccount(adjustment)
     } else {
       val current = getUserCashAccount(userId, adjustment.currency)
-      val updated = current + adjustment
-      assert(updated.isValid)
+      var updated = current + adjustment
+      if (!updated.isValid) {
+        log.error(s"assertion failed! user id: ${userId}, updated: ${updated}")
+        updated = CashAccount(
+          updated.currency,
+          math.max(0, updated.available),
+          math.max(0, updated.locked),
+          math.max(0, updated.pendingWithdrawal))
+      }
       setUserCashAccount(userId, updated)
-      val updateAggregation = aggregationAccount.getOrElse(adjustment.currency, CashAccount(adjustment.currency, 0, 0, 0)) + adjustment
-      assert(updateAggregation.isValid)
+      var updateAggregation = aggregationAccount.getOrElse(adjustment.currency, CashAccount(adjustment.currency, 0, 0, 0)) + adjustment
+      if (!updateAggregation.isValid) {
+        log.error(s"assertion failed! user id: ${userId}, updateAggregation: ${updateAggregation}")
+        updateAggregation = CashAccount(
+          updateAggregation.currency,
+          math.max(0, updateAggregation.available),
+          math.max(0, updateAggregation.locked),
+          math.max(0, updateAggregation.pendingWithdrawal))
+      }
       aggregationAccount += (adjustment.currency -> updateAggregation)
     }
   }
