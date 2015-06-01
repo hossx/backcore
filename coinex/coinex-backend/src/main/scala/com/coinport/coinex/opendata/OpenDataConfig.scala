@@ -11,7 +11,7 @@ class OpenDataConfig() {
   val jsonSnapshotDir: String = "/export/snapshot"
   val jsonMessagesDir: String = "/export/messages"
   val debugSnapshotDir: String = "/debug/snapshot"
-  val hdfsHost: String = "hdfs://hadoop:54310"
+  val hdfsHost: String = "hdfs://master:54310"
   val scheduleInterval = 60 seconds // check if there are data to export every 1 minute.
   val openSnapshotSerializerMap: Map[String, BaseJsonSerializer] = Map.empty
   val openSnapshotFilterMap: Map[String, BaseJsonFilter] = Map.empty

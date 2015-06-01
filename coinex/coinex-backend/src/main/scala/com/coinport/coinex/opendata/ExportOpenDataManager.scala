@@ -130,7 +130,7 @@ class ExportOpenDataManager(val asyncHBaseClient: AsyncHBaseClient, val context:
 
     def initScanner() {
       if (scanner != null) scanner.close()
-      scanner = new SaltedScanner(client, pluginPersistenceSettings.partitionCount, Bytes.toBytes(messagesTable), Bytes.toBytes(messagesFamily))
+      scanner = new SaltedScanner(serialization, client, pluginPersistenceSettings.partitionCount, Bytes.toBytes(messagesTable), Bytes.toBytes(messagesFamily))
       scanner.setSaltedStartKeys(processorId, tryStartSeqNr)
       scanner.setSaltedStopKeys(processorId, RowKey.toSequenceNr(toSeqNum))
       scanner.setKeyRegexp(processorId)
