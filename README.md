@@ -1,26 +1,50 @@
 Backcore
 ========
 
-Mother project for core backend projects - to limit the number of private repositories. To learn more, visit http://coinport.github.io/backcore
+Step to build up entire exchange(for mac):
 
-You can build each project like this:
+Prepare:
+---
+    brew install mongo,redis,leveldb
+    git clone git@github.com:hossx/backcore.git
+    cd backcore/bitway
+    ./prepare.sh // This step still has some defects
 
-    cd f1
-    gradle build
+Publish local:
+---
+    git clone git@github.com:hossx/akka-persistence-hbase.git
+    cd akka-persistence-hbase
+    ./activator publish-local
 
-or:
+    cd backcore/coinex
+    ./activator publish-local
 
-    gradle :f1:build
+Start services:
+---
+    # NOTE need download and start bitcoin wallet and/or alt coin wallet
+    sudo mongod
+    sudo redis-server
 
-You can also build all projects like this:
+    cd backcore
+    ./run.sh
 
-    gradle build
+    cd frontend/exchange2
+    ./run.sh
 
-To add a new project, you need:
+    git clone git@github.com:hossx/admin.git
+    cd admin
+    ./run.sh // This may cause port conflict with exchange2. change the another one
 
-- creates project dir. such as: 'f1'
-- creates setting file for the project. such as 'f1.settings.gradle'
-- adds one item in file: setting.gradle
-- creates build.gradle file in project(f1)
+    // This doesn't work now
+    cd backcore/bitway
+    ./run.sh
 
-BTW, gradle enables you adding sub-projects to each project(f1)
+To be solve:
+---
+- email/sms don't work now. need recharge the email/sms service **@孔亮 @王东**
+- need deplay hdfs/hbase to aws and deploy all of these services to aws **@伟超，@小露**
+- change the logo of coinport **@王东**
+- close open source feature? (need discuss) **@王东**
+- Bitway doesn't work. **@杨立**
+
+
